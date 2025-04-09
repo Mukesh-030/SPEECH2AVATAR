@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import VideoPlayer from "./VideoPlayer";  // Import VideoPlayer component
 
 const SpeechToSign = () => {
-  const [videoUrl, setVideoUrl] = useState(null);
+  const [videoUrls, setVideoUrls] = useState([]);  // Store array of video URLs to play sequentially
   const [isListening, setIsListening] = useState(false);
   const [recognizedText, setRecognizedText] = useState("");  // To store the live text translation
 
@@ -18,11 +18,11 @@ const SpeechToSign = () => {
 
   // Mapping of recognized speech to video URLs
   const signLanguageMapping = {
- // Navigation
+    // Navigation
 hello: "/videos/NAVIGATION/001_HELLO.mp4",
 goodbye: "/videos/NAVIGATION/002_GOODBYE.mp4",
 please: "/videos/NAVIGATION/003_PLEASE.mp4",
-thank_you: "/videos/NAVIGATION/004_THANK_YOU.mp4",
+thankyou: "/videos/NAVIGATION/004_THANK_YOU.mp4",
 sorry: "/videos/NAVIGATION/005_SORRY.mp4",
 yes: "/videos/NAVIGATION/006_YES.mp4",
 no: "/videos/NAVIGATION/007_NO.mp4",
@@ -135,8 +135,8 @@ buy: "/videos/COMMON/097_BUY.mp4",
 sell: "/videos/COMMON/098_SELL.mp4",
 start: "/videos/COMMON/099_START.mp4",
 finish: "/videos/COMMON/100_FINISH.mp4"
-
-};
+    // Add the rest of the categories...
+  };
 
   // Handle Speech Input
   const startListening = () => {
@@ -150,8 +150,12 @@ finish: "/videos/COMMON/100_FINISH.mp4"
       // Update the recognized text in real-time
       setRecognizedText(transcript);
 
-      // Map the recognized speech to a video
-      setVideoUrl(signLanguageMapping[transcript] || null);
+      // Split the transcript into words and map to video URLs
+      const words = transcript.split(" ");
+      const videos = words.map(word => signLanguageMapping[word]).filter(video => video);
+
+      // Set the video URLs array
+      setVideoUrls(videos);
     };
 
     recognition.onerror = (event) => {
@@ -178,8 +182,8 @@ finish: "/videos/COMMON/100_FINISH.mp4"
         </div>
       )}
 
-      {/* Display VideoPlayer component to render the video */}
-      <VideoPlayer videoUrl={videoUrl} />
+      {/* Display VideoPlayer component to render the videos sequentially */}
+      <VideoPlayer videoUrls={videoUrls} />
     </div>
   );
 };

@@ -1,21 +1,33 @@
 // src/components/VideoPlayer.jsx
 
-import React from "react";
-import ReactPlayer from "react-player";
+import React, { useState, useEffect } from "react";
 
-// This component receives the video URL and controls its rendering
-const VideoPlayer = ({ videoUrl }) => {
-  if (!videoUrl) return null;  // Don't render the player if there is no URL
+const VideoPlayer = ({ videoUrls }) => {
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+
+  useEffect(() => {
+    if (videoUrls.length > 0) {
+      setCurrentVideoIndex(0); // Start playing the first video when new videos are passed
+    }
+  }, [videoUrls]);
+
+  const handleVideoEnd = () => {
+    // Play the next video if there is one
+    if (currentVideoIndex < videoUrls.length - 1) {
+      setCurrentVideoIndex(currentVideoIndex + 1);
+    }
+  };
 
   return (
-    <div className="video-player">
-      <ReactPlayer
-        url={videoUrl}
-        playing
-        controls
-        width="100%"    // Adjust to fit the container width
-        height="auto"   // Auto height to maintain aspect ratio
-      />
+    <div>
+      {videoUrls.length > 0 && (
+        <video
+          src={videoUrls[currentVideoIndex]}
+          controls
+          autoPlay
+          onEnded={handleVideoEnd}
+        />
+      )}
     </div>
   );
 };
