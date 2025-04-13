@@ -30,11 +30,16 @@ good: "/videos/NAVIGATION/008_GOOD.mp4",
 bad: "/videos/NAVIGATION/009_BAD.mp4",
 
 // Personal Pronouns
-i_me: "/videos/PERSONAL_PRONOUNS/010_I_ME.mp4",
+i: "/videos/PERSONAL_PRONOUNS/010_I_ME.mp4",
+me: "/videos/PERSONAL_PRONOUNS/010_I_ME.mp4",
 you: "/videos/PERSONAL_PRONOUNS/011_YOU.mp4",
-it_she_him: "/videos/PERSONAL_PRONOUNS/012_IT_SHE_HIM.mp4",
-we_us: "/videos/PERSONAL_PRONOUNS/013_WE_US.mp4",
-they_them: "/videos/PERSONAL_PRONOUNS/014_THEY_THEM.mp4",
+it: "/videos/PERSONAL_PRONOUNS/012_IT_SHE_HIM.mp4",
+she: "/videos/PERSONAL_PRONOUNS/012_IT_SHE_HIM.mp4",
+him: "/videos/PERSONAL_PRONOUNS/012_IT_SHE_HIM.mp4",
+we: "/videos/PERSONAL_PRONOUNS/013_WE_US.mp4",
+us: "/videos/PERSONAL_PRONOUNS/013_WE_US.mp4",
+they: "/videos/PERSONAL_PRONOUNS/014_THEY_THEM.mp4",
+them: "/videos/PERSONAL_PRONOUNS/014_THEY_THEM.mp4",
 
 // Question Words
 who: "/videos/QUESTION_WORDS/015_WHO.mp4",

@@ -1,47 +1,39 @@
-import React, { useState, useRef, useEffect } from "react";
+// src/components/VideoPlayer.jsx
+
+import React, { useState, useEffect } from "react";
+import "./VideoPlayer.css";
 
 const VideoPlayer = ({ videoUrls }) => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const videoRef = useRef(null);
 
   useEffect(() => {
-    if (videoUrls.length > 0) {
-      setCurrentVideoIndex(0);
+    if (videoUrls && videoUrls.length > 0) {
+      setCurrentVideoIndex(0); // Reset index when new videos come in
     }
   }, [videoUrls]);
 
   const handleVideoEnd = () => {
     if (currentVideoIndex < videoUrls.length - 1) {
-      setCurrentVideoIndex(currentVideoIndex + 1);
+      setCurrentVideoIndex((prevIndex) => prevIndex + 1);
     }
   };
 
   return (
-    <div
-      style={{
-        width: "640px",
-        height: "360px",
-        backgroundColor: "#000",
-        overflow: "hidden",
-        borderRadius: "10px",
-        boxShadow: "0 0 10px rgba(0,0,0,0.5)",
-      }}
-    >
-      {videoUrls.length > 0 && (
-        <video
-          key={currentVideoIndex}
-          ref={videoRef}
-          src={videoUrls[currentVideoIndex]}
-          controls
-          autoPlay
-          onEnded={handleVideoEnd}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "fill", // <- Stretches to fill box!
-          }}
-        />
-      )}
+    <div className="avatar-container">
+      <div className="video-wrapper">
+        {videoUrls.length > 0 && (
+          <video
+            key={videoUrls[currentVideoIndex]} // 👈 FORCES re-render on src change
+            src={videoUrls[currentVideoIndex]}
+            autoPlay
+            muted
+            onEnded={handleVideoEnd}
+            className="video-player"
+          >
+            Your browser does not support the video tag.
+          </video>
+        )}
+      </div>
     </div>
   );
 };
