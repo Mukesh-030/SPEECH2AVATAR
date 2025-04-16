@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 import spacy
 from flask_cors import CORS
-import os  # Add this to get the PORT from environment
 
 app = Flask(__name__)
 CORS(app)  # Allow all origins for development
@@ -39,5 +38,4 @@ def process_text():
     return jsonify({"keywords": extracted})
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # Render will assign a port
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(debug=True)
