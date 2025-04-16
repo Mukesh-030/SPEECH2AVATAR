@@ -1,13 +1,17 @@
+
+/* VideoPlayer.css */
 /* Avatar main container - the white rounded box */
-/* .avatar-container {
+.avatar-container {
   width: 90%;
   max-width: 800px;
   margin: 0 auto;
   padding: 30px;
-  background-color: #557a95;
+  background: #3b0e68;
+  background: radial-gradient(circle, #3b0e68 
+  0%, #1a084e 100%);
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-} */
+}
 
 /* Wrapper to make video responsive */
 .video-wrapper {
@@ -28,3 +32,12 @@
     object-fit: contain; /* OR try "cover" if you want it filled fully */
     border-radius: 12px;
   }
+  .current-sign {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1.2rem;
+    color: #eb1818;
+    font-weight: bold;
+  }
+  
+  

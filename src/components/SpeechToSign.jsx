@@ -1,24 +1,17 @@
 // src/components/SpeechToSign.jsx
-
-import React, { useState } from "react";
-import VideoPlayer from "./VideoPlayer";  // Import VideoPlayer component
+import React, { useState, useRef, useEffect } from "react";
+import VideoPlayer from "./VideoPlayer";
 
 const SpeechToSign = () => {
-  const [videoUrls, setVideoUrls] = useState([]);  // Store array of video URLs to play sequentially
+  const [videoUrls, setVideoUrls] = useState([]);
   const [isListening, setIsListening] = useState(false);
-  const [recognizedText, setRecognizedText] = useState("");  // To store the live text translation
+  const [recognizedText, setRecognizedText] = useState("");
+  const recognitionRef = useRef(null);
+  const timeoutRef = useRef(null);
 
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
-
-  recognition.lang = "en-US";
-  recognition.continuous = true;
-  recognition.interimResults = true;  // Get interim results for real-time updates
-
-  // Mapping of recognized speech to video URLs
-  const signLanguageMapping = {
-    // Navigation
+ // Mapping of recognized speech to video URLs
+ const signLanguageMapping = {
+  // Navigation
 hello: "/videos/NAVIGATION/001_HELLO.mp4",
 goodbye: "/videos/NAVIGATION/002_GOODBYE.mp4",
 please: "/videos/NAVIGATION/003_PLEASE.mp4",
@@ -140,37 +133,67 @@ buy: "/videos/COMMON/097_BUY.mp4",
 sell: "/videos/COMMON/098_SELL.mp4",
 start: "/videos/COMMON/099_START.mp4",
 finish: "/videos/COMMON/100_FINISH.mp4"
-    // Add the rest of the categories...
-  };
+  // Add the rest of the categories...
+};
 
-  // Handle Speech Input
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognitionRef.current = recognition;
+
+      let finalTranscript = "";
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
+        setRecognizedText(transcript);
+
+        // Reset previous timeout
+        clearTimeout(timeoutRef.current);
+
+        // Set new timeout for 2 seconds after last input
+        timeoutRef.current = setTimeout(async () => {
+          finalTranscript = transcript.trim();
+          if (finalTranscript) {
+            try {
+              const response = await fetch("http://localhost:5000/process", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: finalTranscript }),
+              });
+
+              const data = await response.json();
+              const extractedKeywords = data.keywords;
+              const videos = extractedKeywords.map((word) => signLanguageMapping[word]).filter(Boolean);
+              setVideoUrls(videos);
+            } catch (error) {
+              console.error("Error communicating with NLP server:", error);
+            }
+          }
+        }, 2000);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+      };
+    }
+  }, []);
+
   const startListening = () => {
+    setRecognizedText("");
+    setVideoUrls([]);
     setIsListening(true);
-    recognition.start();
-
-    recognition.onresult = (event) => {
-      // Get the transcript of the latest speech input
-      const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
-
-      // Update the recognized text in real-time
-      setRecognizedText(transcript);
-
-      // Split the transcript into words and map to video URLs
-      const words = transcript.split(" ");
-      const videos = words.map(word => signLanguageMapping[word]).filter(video => video);
-
-      // Set the video URLs array
-      setVideoUrls(videos);
-    };
-
-    recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
-    };
+    recognitionRef.current?.start();
   };
 
   const stopListening = () => {
-    recognition.stop();
+    recognitionRef.current?.stop();
     setIsListening(false);
+    clearTimeout(timeoutRef.current);
   };
 
   return (
@@ -179,7 +202,6 @@ finish: "/videos/COMMON/100_FINISH.mp4"
       <button onClick={startListening} disabled={isListening}>Start Listening</button>
       <button onClick={stopListening} disabled={!isListening}>Stop Listening</button>
 
-      {/* Display the recognized text in real-time */}
       {isListening && (
         <div className="recognized-text">
           <h3>Recognized Text:</h3>
@@ -187,8 +209,7 @@ finish: "/videos/COMMON/100_FINISH.mp4"
         </div>
       )}
 
-      {/* Display VideoPlayer component to render the videos sequentially */}
-      <VideoPlayer videoUrls={videoUrls} />
+      <VideoPlayer videoUrls={videoUrls} isListening={isListening} />
     </div>
   );
 };
