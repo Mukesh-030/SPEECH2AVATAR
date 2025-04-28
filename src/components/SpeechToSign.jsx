@@ -9,20 +9,17 @@ const SpeechToSign = () => {
   const recognitionRef = useRef(null);
   const timeoutRef = useRef(null);
 
-  // Mapping of recognized speech to video URLs
   const signLanguageMapping = {
-    // Navigation
     hello: "/videos/NAVIGATION/001_HELLO.mp4",
     goodbye: "/videos/NAVIGATION/002_GOODBYE.mp4",
     please: "/videos/NAVIGATION/003_PLEASE.mp4",
-    thankyou: "/videos/NAVIGATION/004_THANK_YOU.mp4",
+    thank: "/videos/NAVIGATION/004_THANK_YOU.mp4",
     sorry: "/videos/NAVIGATION/005_SORRY.mp4",
     yes: "/videos/NAVIGATION/006_YES.mp4",
     no: "/videos/NAVIGATION/007_NO.mp4",
     good: "/videos/NAVIGATION/008_GOOD.mp4",
     bad: "/videos/NAVIGATION/009_BAD.mp4",
 
-    // Personal Pronouns
     i: "/videos/PERSONAL_PRONOUNS/010_I_ME.mp4",
     me: "/videos/PERSONAL_PRONOUNS/010_I_ME.mp4",
     you: "/videos/PERSONAL_PRONOUNS/011_YOU.mp4",
@@ -34,7 +31,6 @@ const SpeechToSign = () => {
     they: "/videos/PERSONAL_PRONOUNS/014_THEY_THEM.mp4",
     them: "/videos/PERSONAL_PRONOUNS/014_THEY_THEM.mp4",
 
-    // Question Words
     who: "/videos/QUESTION_WORDS/015_WHO.mp4",
     what: "/videos/QUESTION_WORDS/016_WHAT.mp4",
     where: "/videos/QUESTION_WORDS/017_WHERE.mp4",
@@ -43,7 +39,6 @@ const SpeechToSign = () => {
     how: "/videos/QUESTION_WORDS/020_HOW.mp4",
     which: "/videos/QUESTION_WORDS/021_WHICH.mp4",
 
-    // Descriptive
     big: "/videos/DESCRIPTIVE/022_BIG.mp4",
     small: "/videos/DESCRIPTIVE/023_SMALL.mp4",
     hot: "/videos/DESCRIPTIVE/024_HOT.mp4",
@@ -54,7 +49,6 @@ const SpeechToSign = () => {
     few: "/videos/DESCRIPTIVE/029_FEW.mp4",
     many: "/videos/DESCRIPTIVE/030_MANY.mp4",
 
-    // Everyday Nouns
     home: "/videos/EVERYDAY_NOUNS/031_HOME.mp4",
     school: "/videos/EVERYDAY_NOUNS/032_SCHOOL.mp4",
     work: "/videos/EVERYDAY_NOUNS/033_WORK.mp4",
@@ -73,7 +67,6 @@ const SpeechToSign = () => {
     morning: "/videos/EVERYDAY_NOUNS/046_MORNING.mp4",
     afternoon: "/videos/EVERYDAY_NOUNS/047_AFTERNOON.mp4",
 
-    // Numbers
     one: "/videos/NUMBERS/048_ONE.mp4",
     two: "/videos/NUMBERS/049_TWO.mp4",
     three: "/videos/NUMBERS/050_THREE.mp4",
@@ -85,7 +78,6 @@ const SpeechToSign = () => {
     nine: "/videos/NUMBERS/056_NINE.mp4",
     ten: "/videos/NUMBERS/057_TEN.mp4",
 
-    // Days of the Week
     monday: "/videos/DAYS_OF_THE_WEEK/058_MONDAY.mp4",
     tuesday: "/videos/DAYS_OF_THE_WEEK/059_TUESDAY.mp4",
     wednesday: "/videos/DAYS_OF_THE_WEEK/060_WEDNESDAY.mp4",
@@ -94,7 +86,6 @@ const SpeechToSign = () => {
     saturday: "/videos/DAYS_OF_THE_WEEK/063_SATURDAY.mp4",
     sunday: "/videos/DAYS_OF_THE_WEEK/064_SUNDAY.mp4",
 
-    // Emotions
     happy: "/videos/EMOTIONS/065_HAPPY.mp4",
     sad: "/videos/EMOTIONS/066_SAD.mp4",
     excited: "/videos/EMOTIONS/067_EXCITED.mp4",
@@ -103,7 +94,6 @@ const SpeechToSign = () => {
     scared: "/videos/EMOTIONS/070_SCARED.mp4",
     surprised: "/videos/EMOTIONS/071_SURPRISED.mp4",
 
-    // Common
     like: "/videos/COMMON/072_LIKE.mp4",
     love: "/videos/COMMON/073_LOVE.mp4",
     want: "/videos/COMMON/074_WANT.mp4",
@@ -133,73 +123,84 @@ const SpeechToSign = () => {
     sell: "/videos/COMMON/098_SELL.mp4",
     start: "/videos/COMMON/099_START.mp4",
     finish: "/videos/COMMON/100_FINISH.mp4"
-    // Add the rest of the categories...
   };
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.lang = "en-US";
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognitionRef.current = recognition;
-
-      let finalTranscript = "";
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
-        setRecognizedText(transcript);
-
-        // Reset previous timeout
-        clearTimeout(timeoutRef.current);
-
-        // Set new timeout for 2 seconds after last input
-        timeoutRef.current = setTimeout(async () => {
-          finalTranscript = transcript.trim();
-          if (finalTranscript) {
-            const backendUrl =
-              process.env.NODE_ENV === "production"
-                ? "https://speech2avatar-backend.onrender.com"
-                : "http://localhost:5000"; // Use localhost for development
-
-            try {
-              const response = await fetch(`${backendUrl}/process`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: finalTranscript }),
-              });
-
-              const data = await response.json();
-              const extractedKeywords = data.keywords;
-              const videos = extractedKeywords
-                .map((word) => signLanguageMapping[word])
-                .filter(Boolean);
-              setVideoUrls(videos);
-            } catch (error) {
-              console.error("Error communicating with NLP server:", error);
-            }
-          }
-        }, 2000);
-      };
-
-      recognition.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
-      };
+    if (!SpeechRecognition) {
+      console.error("SpeechRecognition API not supported in this browser.");
+      return;
     }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognitionRef.current = recognition;
+
+    let finalTranscript = "";
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
+      setRecognizedText(transcript);
+
+      clearTimeout(timeoutRef.current);
+
+      timeoutRef.current = setTimeout(async () => {
+        finalTranscript = transcript.trim();
+        if (finalTranscript) {
+          const backendUrl =
+            process.env.NODE_ENV === "production"
+              ? "https://speech2avatar-backend.onrender.com"
+              : "http://localhost:5000";
+
+          try {
+            const response = await fetch(`${backendUrl}/process`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text: finalTranscript }),
+            });
+
+            const data = await response.json();
+            const extractedKeywords = data.keywords || [];
+
+            const videos = extractedKeywords
+              .map((word) => signLanguageMapping[word])
+              .filter(Boolean);
+
+            setVideoUrls(videos);
+          } catch (error) {
+            console.error("Error communicating with NLP server:", error);
+          }
+        }
+      }, 2000);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+    };
+
+    return () => {
+      recognition.stop();
+      clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   const startListening = () => {
-    setRecognizedText("");
-    setVideoUrls([]);
-    setIsListening(true);
-    recognitionRef.current?.start();
+    if (!isListening) {
+      setRecognizedText("");
+      setVideoUrls([]);
+      setIsListening(true);
+      recognitionRef.current?.start();
+    }
   };
 
   const stopListening = () => {
-    recognitionRef.current?.stop();
-    setIsListening(false);
-    clearTimeout(timeoutRef.current);
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   return (
@@ -212,7 +213,7 @@ const SpeechToSign = () => {
         Stop Listening
       </button>
 
-      {isListening && (
+      {recognizedText && (
         <div className="recognized-text">
           <h3>Recognized Text:</h3>
           <p>{recognizedText}</p>

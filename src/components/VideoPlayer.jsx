@@ -1,3 +1,4 @@
+// File: src/components/VideoPlayer.jsx
 import React, { useState, useEffect } from "react";
 import "./VideoPlayer.css";
 import MicrophoneAnimation from "./MicrophoneAnimation";
@@ -5,15 +6,21 @@ import MicrophoneAnimation from "./MicrophoneAnimation";
 const VideoPlayer = ({ videoUrls, isListening }) => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [allVideosPlayed, setAllVideosPlayed] = useState(false);
+  const [videoKey, setVideoKey] = useState(Date.now()); // 🔑 force video re-render
 
   useEffect(() => {
     setCurrentVideoIndex(0);
     setAllVideosPlayed(false);
+    setVideoKey(Date.now()); // 🔁 reset video key when videoUrls change
   }, [videoUrls]);
 
   const handleVideoEnd = () => {
     if (currentVideoIndex < videoUrls.length - 1) {
-      setCurrentVideoIndex((prevIndex) => prevIndex + 1);
+      setCurrentVideoIndex((prevIndex) => {
+        const nextIndex = prevIndex + 1;
+        setVideoKey(Date.now()); // ⏭ force key update for next video
+        return nextIndex;
+      });
     } else {
       setAllVideosPlayed(true);
     }
@@ -37,7 +44,7 @@ const VideoPlayer = ({ videoUrls, isListening }) => {
           <MicrophoneAnimation />
         ) : showSignVideo ? (
           <video
-            key={videoUrls[currentVideoIndex]}
+            key={`${videoKey}-${currentVideoIndex}`} // 🔁 make key unique
             src={videoUrls[currentVideoIndex]}
             autoPlay
             muted
@@ -47,13 +54,7 @@ const VideoPlayer = ({ videoUrls, isListening }) => {
             Your browser does not support the video tag.
           </video>
         ) : (
-          <video
-            src="INTRO.mp4"
-            autoPlay
-            muted
-            loop
-            className="video-player"
-          >
+          <video src="INTRO.mp4" autoPlay muted loop className="video-player">
             Your browser does not support the video tag.
           </video>
         )}
